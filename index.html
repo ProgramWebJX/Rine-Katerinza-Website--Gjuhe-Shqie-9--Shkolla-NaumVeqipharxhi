@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rine-Katerinza</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #079fdb;
+    padding: 30px;
+    
+  }
+  
+  h1 {
+    color: #fff;
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .quiz-card {
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    padding: 20px;
+    margin-bottom: 30px;
+    transition: transform 0.2s, box-shadow 0.3s, background-color 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .quiz-card.correct {
+    background: #00cc66;
+    box-shadow: 0 0 25px #00ff7f;
+    animation: zoomIn 0.4s;
+  }
+
+  .quiz-card.wrong {
+    background: #ff4d4d;
+    box-shadow: 0 0 25px #ff0000;
+    animation: shake 0.4s;
+  }
+
+  .quiz-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  }
+
+  .quiz-card p {
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #222;
+  }
+
+  .option {
+    display: flex;
+    align-items: center;
+    margin: 6px 0;
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  .option:hover {
+    background-color: #d6d6d6;
+  }
+
+  .option input {
+    margin-right: 10px;
+  }
+
+  .icon {
+    font-size: 22px;
+    margin-left: auto;
+  }
+
+  .confetti {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: red;
+    top: 50%;
+    left: 50%;
+    opacity: 0;
+    border-radius: 50%;
+    animation: explode 1s forwards;
+  }
+
+  @keyframes explode {
+    0% {transform: translate(0,0) scale(1); opacity: 1;}
+    100% {transform: translate(var(--x), var(--y)) scale(0.5); opacity: 0;}
+  }
+
+  @keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-7px); }
+    50% { transform: translateX(7px); }
+    75% { transform: translateX(-7px); }
+    100% { transform: translateX(0); }
+  }
+
+  @keyframes zoomIn {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.07); }
+    100% { transform: scale(1); }
+  }
+
+  /* Drag & Drop pjesa */
+  .zone-container {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 50px;
+    gap: 60px;
+  }
+  .dropzone {
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    background: #e9ecef;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    padding-top: 20px;
+  }
+  .answers {
+    margin-top: 40px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  .answer {
+    background: #fff;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: grab;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    transition: background-color 0.3s, transform 0.3s;
+    margin: 5px;
+  }
+  .answer.correct {
+    background-color: #c8f7c5;
+    transform: scale(1.05);
+  }
+  .answer.wrong {
+    background-color: #f8c7c7;
+    animation: shake 0.3s;
+  }
+  .icon {
+    margin-left: 5px;
+  }
+  .confetti2 {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: confettiFall 1s linear forwards;
+    opacity: 0.8;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg); opacity:1; }
+    100% { transform: translateY(200px) rotate(360deg); opacity:0; }
+  }
+
+/* Stil unik për kartën Figurat Letrare */
+.card {
+  background: #fff;
+  padding: 22px 26px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(20,30,40,0.10);
+  width: 370px;
+  margin: 50px auto 30px auto;
+  font-family: inherit;
+}
+.card h1 {
+  margin: 0 0 16px 0;
+  font-size: 21px;
+  color: #079fdb;
+  text-align: center;
+}
+.card label {
+  display: block;
+  margin-top: 12px;
+  font-size: 15px;
+  color: #222;
+}
+.card input[type="text"] {
+  width: 100%;
+  padding: 9px 11px;
+  margin-top: 6px;
+  border: 1px solid #cdd7ea;
+  border-radius: 7px;
+  box-sizing: border-box;
+  font-size: 15px;
+}
+.card button {
+  margin-top: 16px;
+  width: 100%;
+  padding: 11px;
+  border: none;
+  border-radius: 7px;
+  background: #079fdb;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.2s;
+}
+.card button:hover {
+  background: #056fa7;
+}
+.card .result {
+  margin-top: 14px;
+  background: #eef6ff;
+  padding: 12px;
+  border-radius: 7px;
+  font-size: 15px;
+  color: #222;
+}
+
+.tregimi {
+  color: white;        /* vetëm teksti i tregimit bëhet i bardhë */
+  background: #3e31e7;   /* opsionale, për kontrast */
+  padding: 20px;
+  border-radius: 8px;
+  line-height: 1.6;
+}
+
+</style>
+</head>
+<body>
+
+
+<div class="tregimi">
+  <h1>Rinë-Katerinza</h1>
+
+
+
+
+
+<p>HENEZA ISH MBI KORIJE DHE E RUATE MOS I NGJASE DO NJE E KEQE.HIJA E SAJ I VINTE PAS BESNIKE EDHE ERA FERSHELLINTE NEPER BAR E FLETE.RINE-KATERINEZA U FAL, PUTHI MERMERINE E TE ZOT E I FOLI:</p>
+
+<p>-O IM ZOT KIROLLOJ</p>
+<p>-AS UNJ VESHIN ME DEGJO</p>
+<p>AS ZGJAT KRAHUN ME SHPETO</p>
+<p>-DHE PASTAJ ME GOJE E ME ZEMBREN PLOT:</p>
+
+<img src="kali.jpeg" alt="Foto ilustruese" width="300" height="auto">
+
+<p>MUA MEMEZA ME KA DERGUAR TE TE MARR PER BURRE SE TI QENKE FATI IM. UNAZEN E KAM NJ CIP TE MANDILES.</p>
+
+<p>TRAK TRAK KERCITEN CA DRASA QE THYESHIN :DRRASAT  E QIVURIT TE KIROLLOJT.U HOQ PASTAJ DERI ME NJE ANE E  DOLLI QE BRENDA KY  KIROLLOJ BANDILLI SI RUSP E SHKUAR E RUSPIT :ME OPINGA TELATINE ME TRIQ TE ARTEZE ME XHOKE DHENDERIJE.RINE KATERINZA SA E PA E PELQEU.KIROLLOJ-BANDILLI SA E PA E DASHUROJQE TE DY SISTUR E GADITUR NJERI JATRIN.EDHE QE TE DY I MPRUANTE QE LART VETE ZONJA HENE E LARE  ND AR E NDE ERGJEND.RE KISH PO ISHIN TE BARDHA SI LINJA E LIRTE EDHE TE NENTE FUSHAT E QIELLIT ISHIN TE GJERA SA HENA KISH SE KU TE BREDHE.KATERINEZA RRINTE TANITHI KRYE  UNJUR SI NUSE E NUSERUAR ATYTHI NE VARR I HAPUR ME MANDILEZEN NE DOREN E MENGJER.KIROLLOJ IU AFRUA I HODHI KRAHUN PER BELI I PREKU ME DORE FYTYRENEDHE E PERKEDHELI.AJO E NGRITI SYTE EDHE PA ME NJE MALL QE SKA SI THUHET.PASTAJ ANOJ KRYET NE KRAHEROR TE TIJ U SHTYP U PERSHTYP ME DRIDHJE DHE MBETEN KESHTU. NDENJEN MBI NJE TJATER VARR, MERMER I BARDHE SI BORA, TE DO NJE PLAKU TE MOCEM QE TE GEZOHEJ EDHE ATY, SE MBAN DHENDERI E NUSERI PERSIPER. SHKOJ NJE COPE HERE DHE KUR DORA E KIROLLOJIT I PERKEDHELTE EMBEL E LEHTE FLOKEZAT- KAQE EMBELTHI E KAQE LEHTAZI SI VETEM DORA QE KA SHKUAR NEPER JETEN E VARRIT MUNT TE PERKEDHELE. KATERINEZA I FOLI:</p>
+
+<p>-SA I TRETUR JE O IM-ZOT!</p>
+
+<p>RROBAT TE KANE MARRE MYK, FYTYRA TE ESHTE TRETUR EDHE SYTE THELLUAR-PO JE KAQE I EMBEL E TE DUA KAQE FORT, SA S'DUA TE NDAHEMI KURRE! AY NUK I THA GJE PO VETEM E PERKEDHELI.</p>
+
+<p>-KETA SY TE BUKUR, KAQ TE FELLE E KAQ TE ZINJ KUSH T'I PAT DHENE? </p>
+
+<p>KIROLLOJ BUZEQESHI.</p>
+
+<p>-PO KETE LAVOME MBI SYN' E DJATHTE, O IM-ZOT?</p>
+
+<p>-NE LUFTE KU LEFTOVA ME RA QENI-TURK ME CABJE… MEMEZA EDHE ME VAJTON.</p>
+<p>TATEN T'IM E KAM KETU, SE GJITH NE LUFTE RA, ME CABJE.</p>
+
+<img src="Rine.jpg" alt="Foto ilustruese" width="300" height="auto">
+
+<p>BRITHTE ERA NEPER QELL EDHE CONTE E PERCONTE LARG RET E BARDHEZA SI VELA LUNDRE.</p>
+
+
+
+<p>AQE FORT E DESH KIROLLOJ KATERINZEN SA DESH TA BENTE MOLLE TA MBANTE NE GJI.</p>
+
+
+
+<p>-CDO DESHE TE BEHEJ TI, O IM-ZOT?-QIPARIS , O VASHA IME.</p>
+
+
+
+<p>-EDHE UNE DHRIZ E BARDHE…</p>
+
+<p>SA TE LUMTUR ISHIN QE TE DY! RRININ MBI GUR TE VARRIT E U DUKEJ SIKUR BREDHIN NEPER  QELL, NE ZONJA-HENE, NE KASHTA E ZOTIT-KUMTER E ME TEJ, MAL MBI MAL, FUSHE MBI FUSHE.</p>
+
+
+
+<p>VON FORT KIROLLOJ HAPI GOJEN E FOLI:</p>
+
+<p>-SI DO QE TA LIDHEM BESEN, MOJ FTUJZA IME? A VJEN TI NE ATE JETE, A TE VI UN KETUNE?</p>
+
+<p>RINE-KATERINZA RRINTE E MEJTUAR.</p>
+
+<p>VESHTRONTE HENEN LART , UJRAT POSHTE, BAR E PEME RETH E RROTULL… KAQE </p>
+
+
+<p>BUKURI AN'E MB'ANE , O ZOT I MATH!- SI TE NDAHESH NGA KJO BOTE?</p>
+
+
+
+<p>E ME QE ISH MUAJI MAJ E ME QE ISH SHOSHUR QE LART NJ RE UDHETARE, S'DI SE NGA VINTE NJE ERE E EMBEL HUNAPI- KAQE E EMBEL SA TE BENTE TE MBYLLNJE SYTE. </p>
+
+
+
+<p>TJATER GJE ME TE EMBEL AS QE KA…</p>
+
+
+
+<p>-TINK-TINK-TINK! NJE ZILE PERTEJ; CIU-CIU! NJE SHPESH  NEPER GJUME; FESH-FESH, ERA NEPER FLETE.</p>
+
+<p>EDHE KIROLLOJI SI RUSP I BUKUR, ATY PRANE.</p>
+
+<p>FOLI VASHA:</p>
+<p>-NUK DI SI ESHTE ATJE, O IM ZOT, SE AS SYRI MA KA PARE, AS KEMBA MA KA SHKELUR. PO SE MA THUA TI, SKA QYSH MOS JETE BUKUR. DHE UNE… </p>
+<p>… IU DERDHE FLOKEZAT MBI SUPE. FLOKEZAT E ARTA MBI SUPE SI BORA.</p>
+<p>U DRODH KIROLLOJI I VDEKURI NGA KAQE BUKURI… DHE MBETI PASTAJ I MEKUR, MIDIS DY BOTESH</p>
+<p>-PERSE DRIDHESH FTUJZ' E BARDHE? </p>
+<p>-NGA E FTOHTA O IM-ZOT!</p>
+<p>PO E FTOHTA  QE E BENTE  VASHEN TE DRIDHEJ NUK ISH TJATER, PO E FTOHT’ E VARRIT TE HAPUR. E SI I PUSHTOJ MEZIN E KRAHN’ E MAJTE, E SI I ANOJ KRYET NE KRAHARUAR, I FOLI:</p>
+<p>-PER KETU T’A LIDHIM BESEN, O IM-ZOT!</p>
+<p>DHE U NGRITENE EDHE LITHNE BESEN, ATY NE VARRI I S’EMES, NDENE DRITEN E ZONJES-HENE. E ASKUSH S’DUHEJ TE DINTE BESEN E MARTESEN E TYRE!</p>
+<p>…</p>
+<p>E GJELBER ESHTE FLETA E DHRIZES, I GJELBER ESHTE BARI I PRILLIT,
+</div>
+
+
+
+<!-- ==================== QUIZ ME ALTERNATIVA ==================== -->
+<h1>Pyetje rreth tekstit me alternativa</h1>
+  <div class="quiz-card" data-quiz="q2">
+  <p>1. Cfare lloj teksti eshte</p>
+  <label class="option"><input type="radio" name="q2" value="Toka" data-correct="false">Perralle<span class="icon"></span></label>
+  <label class="option"><input type="radio" name="q2" value="Marsi" data-correct="false">Legjende<span class="icon"></span></label>
+  <label class="option"><input type="radio" name="q2" value="Jupiteri" data-correct="true">Tregim rrefenje<span class="icon"></span></label>
+  <label class="option"><input type="radio" name="q2" value="Venusi" data-correct="false">Mit<span class="icon"></span></label>
+</div>
+
+<div class="quiz-card" data-quiz="q3">
+  <p>2. Ne c'kohe te dites zhvillohet ngjarja?</p>
+  <label class="option"><input type="radio" name="q3" value="Paris" data-correct="false">Ne mengjes<span class="icon"></span></label>
+  <label class="option"><input type="radio" name="q3" value="Lyon" data-correct="false">Paradite<span class="icon"></span></label>
+  <label class="option"><input type="radio" name="q3" value="Berlin" data-correct="false">Buze mbremje<span class="icon"></span></label>
+  <label class="option"><input type="radio" name="q3" value="Madrid" data-correct="true">Nate<span class="icon"></span></label>
+</div>
+
+<div class="quiz-card" data-quiz="q4">
+  <p>3. Cilat personazhe marin pjese</p>
+  <label class="option"><input type="radio" name="q4" value="7" data-correct="false">Donika dhe Kostandini<span class="icon"></span></label>
+  <label class="option"><input type="radio" name="q4" value="5" data-correct="true">Rine-Katerinza dhe Kirolloji<span class="icon"></span></label>
+  <label class="option"><input type="radio" name="q4" value="6" data-correct="false">Kleanthi dhe Nikolin<span class="icon"></span></label>
+  <label class="option"><input type="radio" name="q4" value="8" data-correct="false">Kasandra dhe Kastrioti<span class="icon"></span></label>
+</div>
+
+<div class="quiz-card" data-quiz="q5">
+  <p>4. Ku shkoi vajza per te biseduar me nenen</p>
+  <label class="option"><input type="radio" name="q5" value="Thomas Edison" data-correct="false">Ne park<span class="icon"></span></label>
+  <label class="option"><input type="radio" name="q5" value="Nikola Tesla" data-correct="false">Reze malit<span class="icon"></span></label>
+  <label class="option"><input type="radio" name="q5" value="Einstein" data-correct="true">Ne vareza<span class="icon"></span></label>
+  <label class="option"><input type="radio" name="q5" value="Newton" data-correct="false">Buze lumit<span class="icon"></span></label>
+</div>
+
+<div class="quiz-card" data-quiz="q6">
+  <p>5. Ne kete fragment pervec lidhjes me dy te dashuruarve, cila lidhje eshte me e rendesishme.</p>
+  <label class="option"><input type="radio" name="q6" value="9" data-correct="false">Femija me babain<span class="icon"></span></label>
+  <label class="option"><input type="radio" name="q6" value="8" data-correct="false">Motra me vellain<span class="icon"></span></label>
+  <label class="option"><input type="radio" name="q6" value="7" data-correct="true">Nena me femijen<span class="icon"></span></label>
+  <label class="option"><input type="radio" name="q6" value="6" data-correct="false">Gjyshja me mbesen<span class="icon"></span></label>
+</div>
+
+<div class="quiz-card" data-quiz="q7">
+  <p>6. Pse Kuteli zgjedh pikerish varezat per te zhvilluar tregimin</p>
+  <label class="option"><input type="radio" name="q7" value="Nili" data-correct="false">Fataliteti i vdekjes<span class="icon"></span></label>
+  <label class="option"><input type="radio" name="q7" value="Amazon" data-correct="false">Sakrificat e jetes<span class="icon"></span></label>
+  <label class="option"><input type="radio" name="q7" value="Danubi" data-correct="true">Forca e dashurise <span class="icon"></span></label>
+  <label class="option"><input type="radio" name="q7" value="Mississippi" data-correct="false">Jeten pertej varrit<span class="icon"></span></label>
+</div>
+
+<div class="quiz-card" data-quiz="q8">
+  <p>7. Cili eshte mesazhi qe perciell kjo rrefenje</p>
+  <label class="option"><input type="radio" name="q8" value="4" data-correct="false">Kujdesi i nenes per femije vazhdon deri ne vdekje<span class="icon"></span></label>
+  <label class="option"><input type="radio" name="q8" value="3" data-correct="false">Bukuria nuk verbon vetem syte por dhe zemren<span class="icon"></span></label>
+  <label class="option"><input type="radio" name="q8" value="6" data-correct="false">Nuk ka rendesi pamja e jashtme por ajo e brendhshme<span class="icon"></span></label>
+  <label class="option"><input type="radio" name="q8" value="5" data-correct="true">Forca e dashurise eshte aq e madhe sa ngre dhe te vdekurin nga varri<span class="icon"></span></label>
+</div>
+
+
+
+<!-- ==================== DRAG & DROP QUIZ ==================== -->
+<h1>Analize Personazhesh</h1>
+<div class="zone-container">
+  <div class="dropzone" data-correct="A">Rine-Katerinza</div>
+  <div class="dropzone" data-correct="B">Kirolloji</div>
+</div>
+
+<div class="answers">
+  <div class="answer" draggable="true" data-answer="A">Floke te gajta kafe<span class="icon"></span></div>
+  <div class="answer" draggable="true" data-answer="B">Syre blu<span class="icon"></span></div>
+  <div class="answer" draggable="true" data-answer="A">Syte kafe<span class="icon"></span></div>
+  <div class="answer" draggable="true" data-answer="B">Floke kafe me pluhr<span class="icon"></span></div>
+  <div class="answer" draggable="true" data-answer="A">Jetime<span class="icon"></span></div>
+  <div class="answer" draggable="true" data-answer="B">Shtatelarte<span class="icon"></span></div>
+  <div class="answer" draggable="true" data-answer="A">E bukur<span class="icon"></span></div>
+  <div class="answer" draggable="true" data-answer="B">I mahnitur nga bukuria e saj<span class="icon"></span></div>
+  <div class="answer" draggable="true" data-answer="A">Zemer Mire<span class="icon"></span></div>
+  <div class="answer" draggable="true" data-answer="B"> I dashuruar<span class="icon"></span></div>
+  <div class="answer" draggable="true" data-answer="A">Keqtrajtuar nga njerka<span class="icon"></span></div>
+  <div class="answer" draggable="true" data-answer="B">Guximtar<span class="icon"></span></div>
+</div>
+<!-- Shto këtu formularin për Figurat Letrare -->
+ <h1>Figurat Letrare</h1>
+<div class="card" style="margin: 40px auto;">
+  <h1>Ploteso</h1>
+  <form id="figForm">
+    <label for="metafora">Metafora</label>
+    <input id="metafora" name="metafora" type="text" placeholder="Shkruaj metaforën...">
+    <label for="epitete">Epitete</label>
+    <input id="epitete" name="epitete" type="text" placeholder="Shkruaj epitete...">
+    <label for="krahasime">Krahasime</label>
+    <input id="krahasime" name="krahasime" type="text" placeholder="Shkruaj krahasimet...">
+    <button type="submit">Ruaj</button>
+  </form>
+  <div id="output" class="result" style="display:none;"></div>
+</div>
+<script>
+  // Simulim të thirrjes së input() nga Python: formë që merr vlerat dhe i shfaq
+  const form = document.getElementById('figForm');
+  const output = document.getElementById('output');
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    const m = document.getElementById('metafora').value.trim();
+    const ep = document.getElementById('epitete').value.trim();
+    const k = document.getElementById('krahasime').value.trim();
+    output.style.display = 'block';
+    output.innerHTML = '<strong>Metafora:</strong> ' + (m || '<i>(shtypur bosh)</i>') + '<br>' +
+      '<strong>Epitete:</strong> ' + (ep || '<i>(shtypur bosh)</i>') + '<br>' +
+      '<strong>Krahasime:</strong> ' + (k || '<i>(shtypur bosh)</i>');
+  });
+
+</script>
+<script>
+// Quiz klasik
+document.querySelectorAll('.option input').forEach(function(input) {
+  input.addEventListener('change', function() {
+    const card = this.closest('.quiz-card');
+    const allInputs = card.querySelectorAll('input[type="radio"]');
+    card.classList.remove('correct', 'wrong');
+    void card.offsetWidth;
+    if(this.dataset.correct === "true") {
+      card.classList.add('correct');
+      this.parentNode.querySelector('.icon').textContent = "✅";
+      allInputs.forEach(i => i.disabled = true);
+      spawnConfetti(card);
+    } else {
+      card.classList.add('wrong');
+      this.parentNode.querySelector('.icon').textContent = "❌";
+    }
+  });
+});
+
+function spawnConfetti(card) {
+  for(let i=0;i<30;i++) {
+    const conf = document.createElement('div');
+    conf.classList.add('confetti');
+    conf.style.backgroundColor = randomColor();
+    const angle = Math.random()*2*Math.PI;
+    const radius = 90+Math.random()*60;
+    conf.style.setProperty('--x', `${Math.cos(angle)*radius}px`);
+    conf.style.setProperty('--y', `${Math.sin(angle)*radius}px`);
+    card.appendChild(conf);
+    setTimeout(()=>conf.remove(), 1000);
+  }
+}
+
+function randomColor() {
+  const colors = ['#ff595e','#ffca3a','#8ac926','#1982c4','#6a4c93','#ff00ff','#00ffff'];
+  return colors[Math.floor(Math.random()*colors.length)];
+}
+
+// Drag & Drop
+const answers = document.querySelectorAll('.answer');
+const zones = document.querySelectorAll('.dropzone');
+
+answers.forEach(ans => {
+  ans.addEventListener('dragstart', e => {
+    e.dataTransfer.setData('text/plain', ans.dataset.answer);
+    e.dataTransfer.setData('element-index', Array.from(answers).indexOf(ans));
+  });
+});
+
+zones.forEach(zone => {
+  zone.addEventListener('dragover', e => {
+    e.preventDefault();
+  });
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    const droppedAnswer = e.dataTransfer.getData('text/plain');
+    const idx = e.dataTransfer.getData('element-index');
+    const ansElement = answers[idx];
+    zone.appendChild(ansElement);
+    if(zone.dataset.correct === droppedAnswer) {
+      ansElement.classList.add('correct');
+      ansElement.classList.remove('wrong');
+      spawnConfetti2(ansElement);
+    } else {
+      ansElement.classList.add('wrong');
+      ansElement.classList.remove('correct');
+    }
+  });
+});
+
+function spawnConfetti2(ansElement) {
+  for(let i=0;i<15;i++) {
+    const conf = document.createElement('div');
+    conf.classList.add('confetti2');
+    conf.style.left = `${Math.random()*50}px`;
+    conf.style.top = `-10px`;
+    conf.style.backgroundColor = randomColor();
+    ansElement.appendChild(conf);
+    setTimeout(()=>conf.remove(), 1000);
+  }
+}
+
+
+</script>
+<div class="container" style="margin-top:1.1cm; width:45%;">
+    <footer style="text-align: center; margin-top: 10px; color: #333; font-family: Arial, sans-serif;">
+  <!-- Rreshti me Powered by dhe foto -->
+  <div style="display: inline-flex; align-items: center; gap: 10px;">
+    <span style="font-size: 19px;">Powered by:</span>
+    <img src="Screenshot 2025-09-01 163912.png" alt="Screenshot" width="140" height="auto" style="display: block;">
+  </div>
+</body>
+</html>
+
+
